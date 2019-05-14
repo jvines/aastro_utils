@@ -31,7 +31,6 @@ def cadence_bin(times, data, dt):
 
     """
     def cadence_bin(times, data, dt):
-        i = 0
         ti = times[0]
         tf = times[-1]
         n = int(sp.ceil((tf - ti) / dt))
@@ -48,4 +47,7 @@ def cadence_bin(times, data, dt):
             binned_times[i] = sp.median(times[low * up])
             binned_data[i] = sp.median(data[low * up])
             binned_errs[i] = sp.sqrt(sp.var(data[low * up]) / bin_n)
-        return binned_times, binned_data, binned_errs
+        binned_times = binned_times[binned_times != 0]
+        binned_data = binned_data[binned_data != 0]
+        binned_errs = binned_errs[binned_errs != 0]
+    return binned_times, binned_data, binned_errs

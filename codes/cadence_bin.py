@@ -51,4 +51,4 @@ def cadence_bin(times, data, dt):
         binned_times = binned_times[no_zeroes]
         binned_data = binned_data[no_zeroes]
         binned_errs = binned_errs[no_zeroes]
-    return binned_times, binned_data, binned_errs
+        return binned_times, binned_data, binned_errs

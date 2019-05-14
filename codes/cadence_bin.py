@@ -30,25 +30,24 @@ def cadence_bin(times, data, dt):
         number of data points inside the bin.
 
     """
-    def cadence_bin(times, data, dt):
-        ti = times[0]
-        tf = times[-1]
-        n = int(sp.ceil((tf - ti) / dt))
-        binned_times = sp.zeros(n - 1)
-        binned_data = sp.zeros(n - 1)
-        binned_errs = sp.zeros(n - 1)
-        t = sp.linspace(ti, tf, n)
-        for i in range(0, n - 1):
-            low = t[i] < times
-            up = times < t[i + 1]
-            bin_n = len(times[low * up])
-            if ~sp.any(low * up):
-                continue
-            binned_times[i] = sp.median(times[low * up])
-            binned_data[i] = sp.median(data[low * up])
-            binned_errs[i] = sp.sqrt(sp.var(data[low * up]) / bin_n)
-        no_zeroes = binned_times != 0
-        binned_times = binned_times[no_zeroes]
-        binned_data = binned_data[no_zeroes]
-        binned_errs = binned_errs[no_zeroes]
-        return binned_times, binned_data, binned_errs
+    ti = times[0]
+    tf = times[-1]
+    n = int(sp.ceil((tf - ti) / dt))
+    binned_times = sp.zeros(n - 1)
+    binned_data = sp.zeros(n - 1)
+    binned_errs = sp.zeros(n - 1)
+    t = sp.linspace(ti, tf, n)
+    for i in range(0, n - 1):
+        low = t[i] < times
+        up = times < t[i + 1]
+        bin_n = len(times[low * up])
+        if ~sp.any(low * up):
+            continue
+        binned_times[i] = sp.median(times[low * up])
+        binned_data[i] = sp.median(data[low * up])
+        binned_errs[i] = sp.sqrt(sp.var(data[low * up]) / bin_n)
+    no_zeroes = binned_times != 0
+    binned_times = binned_times[no_zeroes]
+    binned_data = binned_data[no_zeroes]
+    binned_errs = binned_errs[no_zeroes]
+    return binned_times, binned_data, binned_errs

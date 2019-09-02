@@ -1,2 +1,2 @@
-# astro_utils
-Different utilities for astronomy or time series analysis
+# Astronomy Utilities
+A collection of utilities I've used frequently in astronomy and time-series analysis.

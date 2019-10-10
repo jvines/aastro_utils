@@ -1,8 +1,8 @@
-"""
-Credibility interval.
+"""Credibility interval.
 
 Author: Jose Vines
 """
+import scipy as sp
 
 
 def credibility_interval(post, alpha=.68):

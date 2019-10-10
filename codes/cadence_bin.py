@@ -1,8 +1,8 @@
-"""
-Cadence bin.
+"""Cadence bin.
 
 Author: Jose Vines
 """
+import scipy as sp
 
 
 def cadence_bin(times, data, dt):

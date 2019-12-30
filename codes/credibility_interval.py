@@ -5,7 +5,7 @@ Author: Jose Vines
 import scipy as sp
 
 
-def credibility_interval(post, alpha=.68):
+def credibility_interval(post, alpha=1.):
     """Calculate bayesian credibility interval.
 
     Parameters:
@@ -25,12 +25,11 @@ def credibility_interval(post, alpha=.68):
         Upper part of the credibility interval.
 
     """
-    er_msg = 'Cannot calculate credibility interval of a single element.'
-    assert len(post) > 1, er_msg
-    lower_percentile = 100 * (1 - alpha) / 2
-    upper_percentile = 100 * (1 + alpha) / 2
+    z = erf(alpha / sp.sqrt(2))
+
+    lower_percentile = 100 * (1 - z) / 2
+    upper_percentile = 100 * (1 + z) / 2
     low, med, up = sp.percentile(
-        post,
-        [lower_percentile, 50, upper_percentile]
+        post, [lower_percentile, 50, upper_percentile]
     )
     return med, low, up

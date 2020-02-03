@@ -5,6 +5,7 @@ Stacks two or more echelle spectra for an object.
 Author: Jose Vines
 """
 import copy
+import os
 
 import astropy.constants as const
 import astropy.units as u
@@ -13,7 +14,7 @@ from astropy.io import fits
 from tqdm import tqdm
 
 
-def velocity_correction(instrument, spec_list):
+def velocity_correction(instrument, spec_list, rvs=[]):
     """Radial velocity correction for a list of spectra.
 
     Parameters
@@ -26,12 +27,17 @@ def velocity_correction(instrument, spec_list):
     """
     if instrument.lower() == 'feros':
         corrector = feros_velocity_correction
-    for spec in tqdm(spec_list, desc='Spectra'):
-        corrector(spec, True)
+    if not rvs:
+        for spec in tqdm(spec_list, desc='Spectra'):
+            corrector(spec, True)
+    else:
+        for spec, rv in tqdm(zip(spec_list, rvs),
+                             desc='Spectra', total=len(spec_list)):
+            corrector(spec, True, rv)
     pass
 
 
-def feros_velocity_correction(spec, create_fits=False):
+def feros_velocity_correction(spec, create_fits=False, rv=False, out=''):
     """Radial velocity correction for a FEROS spectrum.
 
     Parameters
@@ -54,27 +60,43 @@ def feros_velocity_correction(spec, create_fits=False):
     # Read fits file
     hdul = fits.open(spec)
     # Extract RV
-    rv = hdul[0]['RV'] * u.km / u.s
-    rv = rv.to(u.m / u. s)
+    if not rv:
+        rv = hdul[0].header['RV'] * u.km / u.s
+        rv = rv.to(u.m / u. s)
     # Create gamma
     beta = rv / const.c
     gamma = 1 + beta.value
     # Extract wavelength per order
     wave = hdul[0].data[0, :, :]
     # Extract flux per order
-    flux = hdul[0].data[5, :, 5]
-    orders = wav.shape[0]
+    flux = hdul[0].data[9, :, :]
+    orders = wave.shape[0]
     wave_rest = copy.deepcopy(wave)
     # Move spectra to rest frame
-    for o in orders:
+    for o in range(orders):
         wave_rest[o, :] /= gamma
     if create_fits:
         # Create new fits file
-        out = spec.split('.fits')[0] + '_rest_frame.fits'
-        hdu = fits.PrimaryHDU(sp.stack(wave_rest, flux))
-        hdu.writeto(out)
+        if not out:
+            out = spec.split('.fits')[0]
+        else:
+            date = hdul[0].header['HIERARCH SHUTTER START DATE'].split('-')
+            ut = hdul[0].header['HIERARCH SHUTTER START UT'].split(':')
+            out += hdul[0].header['HIERARCH TARGET NAME'] + '_'
+            for d in date:
+                out += d
+            out += '_UT'
+            for u in ut:
+                out += u
+        out += '_rest_frame.fits'
+        hdu = fits.PrimaryHDU(sp.stack((wave_rest, flux)))
+        try:
+            hdu.writeto(out)
+        except OSError:
+            os.remove(out)
+            hdu.writeto(out)
     hdul.close()
-    return wave, flux
+    return wave_rest, flux
 
 
 def median_combine(spec_list, nord, targ_name, ra, dec, plx):
@@ -100,9 +122,9 @@ def median_combine(spec_list, nord, targ_name, ra, dec, plx):
     fluxes = []
     for o in tqdm(range(nord), desc='Order'):
         combiner = []
-        for spec in tqdm(spec_list, desc='Spectra'):
+        for spec in spec_list:
             hdul = fits.open(spec)
-            flux = hdul[0].data[5, o, :]
+            flux = hdul[0].data[1, o, :]
             wave = hdul[0].data[0, o, :]
             combiner.append(flux)
             hdul.close()
@@ -113,7 +135,7 @@ def median_combine(spec_list, nord, targ_name, ra, dec, plx):
     final_waves = sp.vstack(wavelengths)
     final_fluxes = sp.vstack(fluxes)
     final_out = sp.stack([final_waves, final_fluxes])
-    out = targ_name + 'median.fits'
+    out = targ_name + '_stacked.fits'
     hdr = fits.Header()
     hdr['NAME'] = targ_name
     hdr['PLX'] = plx

@@ -11,11 +11,11 @@ def cadence_bin(times, data, dt):
     Parameters:
     -----------
     times : array_like
-        The times to bin in cadence dt
+        The times to bin in cadence dt.
     data : array_like
-        Data corresponding to time times
+        Data corresponding to time times.
     dt : float
-        Time cadence to bin into
+        Time cadence to bin into in minutes.
 
     Returns:
     --------
@@ -30,8 +30,12 @@ def cadence_bin(times, data, dt):
         number of data points inside the bin.
 
     """
+    # First calculate the dt in JD
+    dt *= 60 / 86400
+    # Grab initial and final time in the timeseries
     ti = times[0]
     tf = times[-1]
+    # Calculate number of bins
     n = int(np.ceil((tf - ti) / dt))
     binned_times = np.zeros(n - 1)
     binned_data = np.zeros(n - 1)

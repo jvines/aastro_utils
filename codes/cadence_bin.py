@@ -2,7 +2,7 @@
 
 Author: Jose Vines
 """
-import scipy as sp
+import numpy as np
 
 
 def cadence_bin(times, data, dt):
@@ -32,20 +32,20 @@ def cadence_bin(times, data, dt):
     """
     ti = times[0]
     tf = times[-1]
-    n = int(sp.ceil((tf - ti) / dt))
-    binned_times = sp.zeros(n - 1)
-    binned_data = sp.zeros(n - 1)
-    binned_errs = sp.zeros(n - 1)
-    t = sp.linspace(ti, tf, n)
+    n = int(np.ceil((tf - ti) / dt))
+    binned_times = np.zeros(n - 1)
+    binned_data = np.zeros(n - 1)
+    binned_errs = np.zeros(n - 1)
+    t = np.linspace(ti, tf, n)
     for i in range(0, n - 1):
         low = t[i] < times
         up = times < t[i + 1]
         bin_n = len(times[low * up])
-        if ~sp.any(low * up):
+        if ~np.any(low * up):
             continue
-        binned_times[i] = sp.median(times[low * up])
-        binned_data[i] = sp.median(data[low * up])
-        binned_errs[i] = sp.sqrt(sp.var(data[low * up]) / bin_n)
+        binned_times[i] = np.median(times[low * up])
+        binned_data[i] = np.median(data[low * up])
+        binned_errs[i] = np.sqrt(np.var(data[low * up]) / bin_n)
     no_zeroes = binned_times != 0
     binned_times = binned_times[no_zeroes]
     binned_data = binned_data[no_zeroes]

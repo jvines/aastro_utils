@@ -51,7 +51,8 @@ def cadence_bin(times, data, dt):
         binned_data[i] = np.median(data[low * up])
         binned_errs[i] = np.sqrt(np.var(data[low * up]) / bin_n)
     no_zeroes = binned_times != 0
-    binned_times = binned_times[no_zeroes]
-    binned_data = binned_data[no_zeroes]
-    binned_errs = binned_errs[no_zeroes]
+    no_nans = ~np.isnan(binned_data)
+    binned_times = binned_times[no_zeroes * no_nans]
+    binned_data = binned_data[no_zeroes * no_nans]
+    binned_errs = binned_errs[no_zeroes * no_nans]
     return binned_times, binned_data, binned_errs

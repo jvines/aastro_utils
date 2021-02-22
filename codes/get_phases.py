@@ -72,6 +72,7 @@ def moon_is_away(time, ra, dec, observatory) -> bool:
 
 if __name__ == '__main__':
     args = arg_parse()
+    # Convert dt to jd
     dt = float(args.dt) * 3600 / 86400
     # Observatory location.
     observatory = EarthLocation.of_site(args.observatory)

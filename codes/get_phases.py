@@ -1,14 +1,14 @@
-"""get quadratures
+"""get phases
 
-Calculate the times of quadrature for a series of objects with given ephemerides
-between two nights in a given observatory
+Calculate the phases in an hourly basis between two nights of a list of
+targets with given ephemerides in a given observatory.
 
 Input file must be:
 
 name ra(deg) dec(deg) epoch period
 
 The output will be:
-    A per target list containing the times of quadratures
+    A per target list containing the phases and the corresponding time.
 
 """
 
@@ -30,7 +30,6 @@ iers_conf.iers_auto_url = 'https://datacenter.iers.org/data/9/finals2000A.all'
 mir = 'ftp://cddis.gsfc.nasa.gov/pub/products/iers/finals2000A.all'
 iers_conf.iers_auto_url_mirror = mir
 
-
 def arg_parse():
     """Parse command line arguments."""
     p = argparse.ArgumentParser()
@@ -38,6 +37,8 @@ def arg_parse():
     p.add_argument('n1', help='Night 1 in Y-m-d')
     p.add_argument('n2', help='Night 2 in Y-m-d')
     p.add_argument('observatory', help='Astropy name of the observatory')
+    p.add_argument('dt',
+                   help='Time interval in hours for calculating the phases.')
     return p.parse_args()
 
 
@@ -71,6 +72,7 @@ def moon_is_away(time, ra, dec, observatory) -> bool:
 
 if __name__ == '__main__':
     args = arg_parse()
+    dt = float(args.dt) * 3600 / 86400
     # Observatory location.
     observatory = EarthLocation.of_site(args.observatory)
     # Read the ephem file.
@@ -84,23 +86,14 @@ if __name__ == '__main__':
     # Loop over each object. Remember q1 is 0.25 phase and q2 is 0.75
     for name, ra, dec, epoch, period in zip(names, ras, decs, epochs, periods):
         print(f'Target: {name}')
-        epoch_start = 0
-        while epoch_start < n1_T.jd:
-            epoch_start += period
-        epoch_start -= period
+        epoch_start = n1_T.jd
         # Pull useable epochs
         current_epoch = epoch_start
         while current_epoch < n2_T.jd:
-            q1 = current_epoch + 0.25 * period
-            q2 = current_epoch - 0.25 * period
-            q1_T = Time(q1, format='jd', scale='utc')
-            q2_T = Time(q2, format='jd', scale='utc')
-            if n1_T.jd <= q1 <= n2_T.jd:
-                if sun_is_down(q1_T, observatory) and \
-                        moon_is_away(q1_T, ra, dec, observatory):
-                    print(f'\t{str(q1_T.datetime)[:16]}\t0.25')
-            if n1_T.jd <= q2 <= n2_T.jd:
-                if sun_is_down(q1_T, observatory) and \
-                        moon_is_away(q1_T, ra, dec, observatory):
-                    print(f'\t{str(q2_T.datetime)[:16]}\t0.75')
-            current_epoch += period
+            phase = ((current_epoch - epoch) / period) % 1
+            phase_T = Time(current_epoch, format='jd', scale='utc')
+            if n1_T.jd <= current_epoch <= n2_T.jd:
+                if sun_is_down(phase_T, observatory) and \
+                        moon_is_away(phase_T, ra, dec, observatory):
+                    print(f'\t{str(phase_T.datetime)[:16]}\t{phase:.2f}')
+            current_epoch += dt

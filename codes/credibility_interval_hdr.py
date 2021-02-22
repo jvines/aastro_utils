@@ -45,18 +45,20 @@ def credibility_interval_hdr(dist, sigma=1.):
     xx = np.linspace(xmin, xmax, 1000)
     pdf = kde(xx)
     # This step is crucial else it doesn't work
-    idx = np.argsort(pdf)[::-1]
+    idx_pdf = np.argsort(pdf)[::-1]
     # Calculate the histogram
-    hh, hx = np.histogram(dist, density=True, bins=1000)
+    hh, hx = np.histogram(dist, density=True, bins=999)
     # Calculate the CDF
-    cdf = np.cumsum(hh) * np.diff(hx)
+    cdf = np.zeros(500)
+    idx_cdf = np.argsort(hh)[::-1]
+    cdf[1:] = np.cumsum(hh[idx_cdf]) * np.diff(hx)
     # Find where the CDF reaches 100*z%. Indices below this value are inside
     # The region corresponding to the confidence interval.
     idx_hdr = np.where(cdf >= z)[0][0]
     # Get the best value (i.e. the peak of the PDF)
     best = np.argmax(pdf)
     # Isolate the HDR
-    hdr = pdf[idx][0:idx_hdr]
+    hdr = pdf[idx_pdf][0:idx_hdr]
     # And get the minimum density
     hdr_min = hdr.min()
     # Min and max values are the extrema of the region and thus the confidence

@@ -5,7 +5,7 @@ Author: Jose Vines
 Calculate and plot RV vs BIS correlation
 """
 
-import scipy as sp
+import numpy as np
 import statsmodels.api as sm
 from scipy.stats import pearsonr
 import scipy.stats as st
@@ -29,10 +29,10 @@ def rv_bis_corr(data, confidence=0.05, name='last'):
 
     """
     # Linear Model fitting
-    tlow = sp.inf
-    tup = -sp.inf
-    x = sp.array([])
-    y = sp.array([])
+    tlow = np.inf
+    tup = -np.inf
+    x = np.array([])
+    y = np.array([])
     for key in data.keys():
         tl = data[key][:, 0].min()
         tu = data[key][:, 0].max()
@@ -40,8 +40,8 @@ def rv_bis_corr(data, confidence=0.05, name='last'):
             tlow = tl
         if tu > tup:
             tup = tu
-        x = sp.concatenate((x, data[key][:, 1]))
-        y = sp.concatenate((y, data[key][:, 3]))
+        x = np.concatenate((x, data[key][:, 1]))
+        y = np.concatenate((y, data[key][:, 3]))
 
     r, p_val = pearsonr(x, y)
 
@@ -60,7 +60,7 @@ def rv_bis_corr(data, confidence=0.05, name='last'):
 
     # 2 tailed t-stat calculation
     t = st.t.ppf(1 - confidence / 2, df=dof)
-    s_err = sp.sum(sp.power(y_err, 2))
+    s_err = np.sum(np.power(y_err, 2))
 
     markers = ['o', 'v', '^', '>', '<', '8', 's', 'p', 'H', 'D', '*', 'd']
 
@@ -85,14 +85,14 @@ def rv_bis_corr(data, confidence=0.05, name='last'):
 
     xmin, xmax = ax.get_xlim()
 
-    x_pred = sp.linspace(xmin, xmax, 1000)
+    x_pred = np.linspace(xmin, xmax, 1000)
     x_pred2 = sm.add_constant(x_pred)
     y_pred = fitted.predict(x_pred2)
 
-    conf = t * sp.sqrt((s_err / (n - 2)) *
-                       (1. / n + (sp.power((x_pred - x_mean), 2) /
-                                  ((sp.sum(sp.power(x_pred, 2))) - n *
-                                   (sp.power(x_mean, 2))))))
+    conf = t * np.sqrt((s_err / (n - 2)) *
+                       (1. / n + (np.power((x_pred - x_mean), 2) /
+                                  ((np.sum(np.power(x_pred, 2))) - n *
+                                   (np.power(x_mean, 2))))))
 
     upper = y_pred + abs(conf)
     lower = y_pred - abs(conf)

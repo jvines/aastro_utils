@@ -13,7 +13,6 @@ The output will be:
 """
 
 import argparse
-from collections import defaultdict
 from datetime import datetime
 from datetime import timedelta
 

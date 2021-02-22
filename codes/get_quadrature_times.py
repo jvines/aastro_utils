@@ -1,6 +1,6 @@
 """get quadratures
 
-Calculate the times of quadrature for a series of object with given ephemerides
+Calculate the times of quadrature for a series of objects with given ephemerides
 between two nights in a given observatory
 
 Input file must be:

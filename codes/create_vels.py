@@ -3,14 +3,13 @@
 create_vels.py
 
 Author: Jose Vines
-Creates or update a .vels files, adding a new velocity, bisector, time, etc.
+Creates or update a .dat file, adding a new velocity, bisector, time, etc.
 If the velocity is already present, it doesn't add it.
 """
 
 from __future__ import print_function
 
 import argparse
-import glob
 import os
 
 import numpy as np
@@ -52,6 +51,7 @@ if __name__ == '__main__':
             instr = data[6]
         info = info.astype(float)
         fname = dir_to_vels + name + '_' + instr.upper() + '.dat'
+        has_content = False
         exists = os.path.isfile(fname)
         if exists:
             has_content = os.stat(fname).st_size
